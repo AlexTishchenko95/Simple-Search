@@ -1,0 +1,11 @@
+<form [formGroup]="formSearch">
+  <mat-form-field class="input-search">
+    <input
+      matInput
+      formControlName="inputSearch"
+      placeholder="Input text for search"
+      autocomplete="off"
+    />
+  </mat-form-field>
+</form>
+<p *ngFor="let item of data$ | async">{{ item }}</p>
