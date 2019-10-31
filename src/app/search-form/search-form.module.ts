@@ -1,8 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SearchFormComponent } from './search-form.component';
+
 import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
+
+import { SearchFormComponent } from './search-form.component';
+
+
 
 @NgModule({
   declarations: [SearchFormComponent],

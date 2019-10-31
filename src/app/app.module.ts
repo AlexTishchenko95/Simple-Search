@@ -1,10 +1,12 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SearchFormModule } from './search-form/search-form.module';
-import { HeaderModule } from './header/header.module';
+
 import { AppComponent } from './app.component';
 
+import { SearchFormModule } from './search-form/search-form.module';
+import { HeaderModule } from './header/header.module';
+import { ResultRowModule } from './result-row/result-row.module';
 
 @NgModule({
   declarations: [
@@ -14,7 +16,8 @@ import { AppComponent } from './app.component';
     BrowserModule,
     HeaderModule,
     SearchFormModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    ResultRowModule
   ],
   providers: [],
   bootstrap: [AppComponent]
