@@ -45,17 +45,19 @@ export class SearchFormComponent implements OnInit, OnDestroy {
   }
 
   onSearch() {
+    const dataArray = [];
+    this.dataArray$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((arr) => dataArray.push(arr));
     this.formSearch.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(value => {
-        this.dataArray$.subscribe((dataArray) => {
-          const checkArray = value.inputSearch.split('');
-          if (dataArray === checkArray[checkArray.length - 1]) {
-            this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' is finded']);
-          } else {
-            this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' not finded']);
-          }
-        });
+        const checkArray = value.inputSearch.split('');
+        if (dataArray.includes(checkArray[checkArray.length - 1])) {
+          this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' is finded']);
+        } else {
+          this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' not finded']);
+        }
       });
   }
 
