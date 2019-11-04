@@ -6,6 +6,8 @@ import { ShareService } from '../share.service';
 import { Subject, from } from 'rxjs';
 import { takeUntil, distinctUntilChanged } from 'rxjs/operators';
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
 function searchValidator(control: FormControl): ValidationErrors {
   function checkValue(arr) {
     if (isNaN(arr)) {
@@ -19,6 +21,8 @@ function searchValidator(control: FormControl): ValidationErrors {
   return { searchWarning: 'Invalid input (only string)' };
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
 @Component({
   selector: 'app-search-form',
   templateUrl: './search-form.component.html',
@@ -29,9 +33,12 @@ export class SearchFormComponent implements OnInit, OnDestroy {
   formSearch: FormGroup;
   destroy$: Subject<void> = new Subject<void>();
 
+  searchCash = new Set();
   dataArray$ = from(['a', 'a', 'b', 'c', 'c', 'd', 'e', 'f', 'g']).pipe(distinctUntilChanged());
 
   constructor(private share: ShareService) { }
+
+  ////////////////////////////////////////////
 
   formsInit() {
     this.formSearch = new FormGroup({
@@ -39,38 +46,57 @@ export class SearchFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  ////////////////////////////////////////////
+
   ngOnInit() {
     this.formsInit();
     this.onSearch();
   }
 
+  ////////////////////////////////////////////
+
   onSearch() {
+    this.formSearch.get('inputSearch').valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        const checkArray = value.split('');
+        if (this.searchCash.has(checkArray[checkArray.length - 1])) {
+          this.onOutFromCash([checkArray[checkArray.length - 1]]);
+        } else {
+          this.searchCash.add(checkArray[checkArray.length - 1]);
+          this.onSearchInObservable([checkArray[checkArray.length - 1]]);
+        }
+      });
+  }
+
+  ////////////////////////////////////////////
+
+  onOutFromCash(val: string[]) {
+    this.share.dataArr$.next([val + ' is find in cash']);
+  }
+
+  ////////////////////////////////////////////
+
+  onSearchInObservable(val: string[]) {
     const dataArray = [];
-    const alreadySearch = new Set();
 
     this.dataArray$
       .pipe(takeUntil(this.destroy$))
       .subscribe((arr) => dataArray.push(arr));
-    this.formSearch.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(value => {
-        const checkArray = value.inputSearch.split('');
-
-        if (alreadySearch.has(checkArray[checkArray.length - 1])) {
-          this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' has already searched']);
-        } else {
-          alreadySearch.add(checkArray[checkArray.length - 1]);
-          if (dataArray.includes(checkArray[checkArray.length - 1])) {
-            this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' is finded']);
-          } else {
-            this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' not finded']);
-          }
-        }
-      });
+    if (dataArray.includes(val[0])) {
+        this.share.dataArr$.next([val[0] + ' find']);
+      } else {
+        this.share.dataArr$.next([val[0] + ' not find']);
+      }
   }
+
+  ////////////////////////////////////////////
 
   ngOnDestroy() {
     this.destroy$.next(null);
     this.destroy$.complete();
   }
 }
+
+////////////////////////////////////////////
+
