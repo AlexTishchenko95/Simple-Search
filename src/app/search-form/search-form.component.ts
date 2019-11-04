@@ -46,6 +46,8 @@ export class SearchFormComponent implements OnInit, OnDestroy {
 
   onSearch() {
     const dataArray = [];
+    const alreadySearch = new Set();
+
     this.dataArray$
       .pipe(takeUntil(this.destroy$))
       .subscribe((arr) => dataArray.push(arr));
@@ -53,10 +55,16 @@ export class SearchFormComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(value => {
         const checkArray = value.inputSearch.split('');
-        if (dataArray.includes(checkArray[checkArray.length - 1])) {
-          this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' is finded']);
+
+        if (alreadySearch.has(checkArray[checkArray.length - 1])) {
+          this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' has already searched']);
         } else {
-          this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' not finded']);
+          alreadySearch.add(checkArray[checkArray.length - 1]);
+          if (dataArray.includes(checkArray[checkArray.length - 1])) {
+            this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' is finded']);
+          } else {
+            this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' not finded']);
+          }
         }
       });
   }
@@ -66,18 +74,3 @@ export class SearchFormComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 }
-
-// onSearch() {
-//   this.formSearch.valueChanges
-//     .pipe(takeUntil(this.destroy$))
-//     .subscribe(value => {
-//       this.dataArray$.subscribe((dataArray) => {
-//         console.log(dataArray);
-//         const checkArray = value.inputSearch.split('');
-//         if (dataArray.includes(checkArray[checkArray.length - 1], 0)) {
-//           this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' is finded']);
-//         } else {
-//           this.share.dataArr$.next([checkArray[checkArray.length - 1] + ' not finded']);
-//         }
-//       });
-//     });
