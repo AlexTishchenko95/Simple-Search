@@ -2,10 +2,14 @@
   <mat-form-field class="input-search">
     <input
       matInput
+      type="text"
+      maxlength="5"
       formControlName="inputSearch"
       placeholder="Input text for search"
       autocomplete="off"
     />
+    <mat-error *ngIf="formSearch.invalid">
+      {{ formSearch.get('inputSearch').errors?.searchWarning }}
+    </mat-error>
   </mat-form-field>
 </form>
-<p *ngFor="let item of data$ | async">{{ item }}</p>
