@@ -3,8 +3,8 @@ import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/
 import { FormGroup, FormControl, ValidationErrors } from '@angular/forms';
 
 import { ShareService } from '../share.service';
-import { Subject, from } from 'rxjs';
-import { takeUntil, distinctUntilChanged } from 'rxjs/operators';
+import {Subject, of} from 'rxjs';
+import {takeUntil, distinctUntilChanged, map, debounceTime} from 'rxjs/operators';
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,8 +33,8 @@ export class SearchFormComponent implements OnInit, OnDestroy {
   formSearch: FormGroup;
   destroy$: Subject<void> = new Subject<void>();
 
-  searchCash = new Set();
-  dataArray$ = from(['a', 'a', 'b', 'c', 'c', 'd', 'e', 'f', 'g']).pipe(distinctUntilChanged());
+  searchCache = new Set();
+  dataArray$ = of(['a', 'a', 'b', 'c', 'c', 'd', 'e', 'f', 'g', 'ab', 'abc', 'ca', 'cb']);
 
   constructor(private share: ShareService) { }
 
@@ -57,37 +57,38 @@ export class SearchFormComponent implements OnInit, OnDestroy {
 
   onSearch() {
     this.formSearch.get('inputSearch').valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(value => {
-        const checkArray = value.split('');
-        if (this.searchCash.has(checkArray[checkArray.length - 1])) {
-          this.onOutFromCash([checkArray[checkArray.length - 1]]);
-        } else {
-          this.searchCash.add(checkArray[checkArray.length - 1]);
-          this.onSearchInObservable([checkArray[checkArray.length - 1]]);
-        }
-      });
+      .pipe(takeUntil(this.destroy$),
+        debounceTime(2000),
+        map(value => {
+          if (this.searchCache.has(value)) {
+           return this.onOutFromCache([value]);
+          } else {
+                return this.onSearchInObservable(value);
+               }
+        }))
+      .subscribe(value => value);
   }
-
   ////////////////////////////////////////////
 
-  onOutFromCash(val: string[]) {
+  onOutFromCache(val: string[]) {
     this.share.dataArr$.next([val + ' is find in cash']);
   }
 
   ////////////////////////////////////////////
 
-  onSearchInObservable(val: string[]) {
-    const dataArray = [];
-
+  onSearchInObservable(val: string) {
     this.dataArray$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((arr) => dataArray.push(arr));
-    if (dataArray.includes(val[0])) {
-        this.share.dataArr$.next([val[0] + ' find']);
-      } else {
-        this.share.dataArr$.next([val[0] + ' not find']);
-      }
+      .pipe(takeUntil(this.destroy$),
+      distinctUntilChanged())
+      .subscribe(arr => {
+        if (arr.includes(val)) {
+          this.share.dataArr$.next([val + ' find']);
+          this.searchCache.add(val);
+          console.log(this.searchCache);
+        } else {
+          this.share.dataArr$.next([val + ' not find']);
+        }
+     });
   }
 
   ////////////////////////////////////////////
@@ -99,4 +100,3 @@ export class SearchFormComponent implements OnInit, OnDestroy {
 }
 
 ////////////////////////////////////////////
-
